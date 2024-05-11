@@ -1,0 +1,69 @@
+`timescale 1ns / 1ns
+//////////////////////////////////////////////////////////////////////////////////
+// Company: eecg.utoronto.ca
+// Engineer: Bob C
+// 
+// Create Date: 05/11/2024 04:55:16 AM
+// Design Name: generation of signal clk given duty cycle and period
+// Module Name: tb
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+module tb();
+    
+    reg clk;
+    reg sig_clk;
+    
+    initial begin
+    clk = 1'b0;
+    sig_clk = 1'b0;
+    end
+    
+    always #10 clk = ~clk;      //generate default clk at 50Mhz
+    
+    task calculate(input real period, input real duty_cycle, output real ton, output real toff);
+        ton = period * duty_cycle; 
+        toff = period - ton;            
+    endtask   //calculate Ton and Toff
+    
+    task wavegen(input real ton, input real toff);
+        @(posedge clk);
+        while(1)begin
+        sig_clk = 1'b1;
+        #ton;
+        sig_clk = ~sig_clk;
+        #toff;
+        end
+    endtask         //generate the signal clk
+    
+    real period;
+    real duty_cycle;
+    real ton;
+    real toff;
+          
+    initial begin   //call tasks
+        calculate(40, 0.4, ton, toff);
+        wavegen(ton, toff);
+    end
+    
+    initial begin          //display all waveforms
+        $dumpfile("dump.vcd");
+        $dumpvars;
+    end
+    
+    initial begin        //run for 200ns
+        #200;
+        $finish();       //stop the program
+    end
+        
+endmodule
