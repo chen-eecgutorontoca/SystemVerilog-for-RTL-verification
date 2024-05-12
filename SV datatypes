@@ -4,8 +4,8 @@
 // Engineer: Bob C
 // 
 // Create Date: 05/11/2024 04:55:16 AM
-// Design Name: 
-// Module Name: tb
+// Design Name: testbench
+// Module Name: 
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -19,7 +19,7 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-module tb();
+module A31();
     
     reg [7:0] a;
     reg [7:0] b;
