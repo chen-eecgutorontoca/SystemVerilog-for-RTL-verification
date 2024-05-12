@@ -1,0 +1,46 @@
+`timescale 1ns / 1ns
+//////////////////////////////////////////////////////////////////////////////////
+// Company: eecg.utoronto.ca
+// Engineer: Bob C
+// 
+// Create Date: 05/11/2024 04:55:16 AM
+// Design Name: 
+// Module Name: tb
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+module tb();
+    
+    reg [7:0] a;
+    reg [7:0] b;
+    integer c;
+    integer d;
+    
+    initial begin
+    a = 12;
+    b = 34;
+    c = 67;
+    d = 255;
+    end
+    
+    initial begin
+    #12
+    $display("value of a is: %d",a);
+    $display("value of b is: %d", b);
+    $display("value of c is: %d", c);
+    $display("value of d is: %d", d);
+    $finish;
+    end
+ 
+     
+endmodule
