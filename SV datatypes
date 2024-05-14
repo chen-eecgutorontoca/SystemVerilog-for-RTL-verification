@@ -115,4 +115,29 @@ module A34();
  
  endmodule
 
+/*Create a Fixed-size array capable of storing 20 elements. Add random values to all the 20 elements by using $urandom function. Now add all the elements of the fixed-size array to the Queue in such a way that the first element of the Fixed-size array should be the last element of the Queue.*/
+
+module A34();
+    int arr[20];
+    int i=0;
+    int arr2[$];        //initialize queue
+    initial begin
+        for(int i=0; i<20; i++)begin
+            arr[i]={$random}%2;            //assign random value to fixed size array
+        end
+    end
+    
+    initial begin
+        for(int j=0; j<20; j++)begin
+            arr2.insert(j,arr[19-j]);            //insert into queue in reverse order
+        end
+    end
+    
+    initial begin
+    $display("fixed size array: %0p",arr);
+    $display("queue: %0p",arr2);
+    $finish;
+    end
+    
+endmodule
 
