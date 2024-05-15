@@ -1,0 +1,47 @@
+`timescale 1ns / 1ns
+//////////////////////////////////////////////////////////////////////////////////
+// Company: eecg.utoronto.ca
+// Engineer: Bob C
+// 
+// Create Date: 05/11/2024 04:55:16 AM
+// Design Name: Object Oriented Programming
+// Module Name: testbench
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+class A51;          //initialize a class with three variables
+    int data1;
+    int data2;
+    int data3;
+endclass
+
+module tb();
+    
+    A51 constru;            //create the object
+    
+    initial begin
+    constru = new();        //call constructor
+    constru.data1 = 45;      //assign values to the object
+    constru.data2 = 79;
+    constru.data3 = 90;
+    end
+    
+    initial begin
+    $display("%0d  %0d  %0d",constru.data1, constru.data2, constru.data3);
+    constru = null;        //deallocate memory space
+    $finish;
+    end
+ 
+endmodule
+
+
