@@ -71,44 +71,62 @@ initial begin
  endmodule
 
 
-module A53();  
-    
-    reg clk;
-    bit en;
-    bit wr;
-    bit [5:0] addr;
-    
-    task stimil();            //using a task to do sequential control
-    en = 1'b1;
-    wr = 1'b1;
-    addr = 6'b001100;
-    #40
-    addr = 6'b001110;
-    #40
-    wr = 1'b0;
-    addr = 6'b010111;
-    #40
-    addr = 6'b110000;
-    #40
-    en = 1'b0;
-    addr = 6'b111000;
-    endtask;
-    
-    always #20 clk = ~clk;
-
-    initial begin
-    en = 1'b0;
-    wr = 1'b0;
-    clk = 1'b0;
-    #20
-    stimil();
-    #40
-    $finish;
-    end
-
-    initial begin
-    $dumpfile("dump.vcd");
-    $dumpvars;
-    end
-    
- endmodule
+module A53();    
+      
+   reg clk;  
+   bit en;  
+   bit wr;  
+   bit [5:0] addr;  
+   reg [31:0] cnt = 0;  
+      
+   initial begin  
+       clk = 1'b0;  
+       en = 1'b0;  
+       wr = 1'b0;  
+   end  
+     
+   always #20 clk = ~clk;     //25MHz clock
+     
+   always @(posedge clk) begin  
+       if (en && wr) begin  
+           if (cnt == 0) begin  
+               addr_task(6'b001100);  
+           end else if (cnt == 1) begin  
+               addr_task(6'b001110);  
+           end  
+       end  
+       else if(en &&!wr)begin
+            if(cnt == 2)begin
+                addr_task(6'b010111);
+            end else if(cnt ==3) begin
+                addr_task(6'b110000);
+            end
+       end
+       else if(!en && !wr)begin
+            addr_task(6'b111000);
+       end
+       cnt <= cnt + 1;
+   end  
+  
+   task addr_task(input bit [5:0] newaddr);    //task to assign addr with new values
+       addr = newaddr;
+   endtask  
+  
+   initial begin                  //sequential control
+       #20  
+       en = 1;  
+       wr = 1;  
+       #80 
+       wr = 0; 
+       #80
+       en = 0;
+       #40
+       $finish;  
+   end  
+      
+   initial begin  
+       $dumpfile("dump.vcd");  
+       $dumpvars;  
+   end  
+      
+endmodule
