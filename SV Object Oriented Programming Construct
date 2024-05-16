@@ -130,3 +130,24 @@ module A53();
    end  
       
 endmodule
+
+
+module A54();    //create a function to initalize array of 32 elements with multiplies of 8
+
+bit [31:0] arr[32];
+
+function automatic void generate_values(ref bit [31:0] arr[32]);    //create a function and pass an array by reference
+    for(int i=0; i<32; i++)begin
+        arr[i] = i*8;
+    end
+endfunction
+
+    initial begin
+    generate_values(arr);
+    #10
+    for(int j=0; j<32; j++)begin
+        $display(arr[j]);
+    end
+    $finish;
+    end
+    
