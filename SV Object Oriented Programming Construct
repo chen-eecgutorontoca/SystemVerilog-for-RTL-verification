@@ -70,3 +70,45 @@ initial begin
  
  endmodule
 
+
+module A53();  
+    
+    reg clk;
+    bit en;
+    bit wr;
+    bit [5:0] addr;
+    
+    task stimil();            //using a task to do sequential control
+    en = 1'b1;
+    wr = 1'b1;
+    addr = 6'b001100;
+    #40
+    addr = 6'b001110;
+    #40
+    wr = 1'b0;
+    addr = 6'b010111;
+    #40
+    addr = 6'b110000;
+    #40
+    en = 1'b0;
+    addr = 6'b111000;
+    endtask;
+    
+    always #20 clk = ~clk;
+
+    initial begin
+    en = 1'b0;
+    wr = 1'b0;
+    clk = 1'b0;
+    #20
+    stimil();
+    #40
+    $finish;
+    end
+
+    initial begin
+    $dumpfile("dump.vcd");
+    $dumpvars;
+    end
+    
+ endmodule
