@@ -44,4 +44,29 @@ module tb();
  
 endmodule
 
+module A52();
+
+function int multiplication(input int a, input int b);        //write a function to perform multiplication
+    return a*b;
+endfunction
+
+    int a;
+    int b;
+    int result;
+    
+initial begin
+    a = $urandom();            //generate random values for a & b
+    b = $urandom();
+    //$display("a: %0d  b: %0d",a, b);
+    result = multiplication(a,b);
+    //$display("a*b = %0d",result);
+    if(result == a*b)begin
+        $display("Test Passed!");
+    end else begin
+        $display("Test Failed!");
+    end
+    $finish;
+ end
+ 
+ endmodule
 
