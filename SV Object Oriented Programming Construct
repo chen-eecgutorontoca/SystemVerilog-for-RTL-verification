@@ -158,7 +158,7 @@ class A55;
     bit [7:0] b;
     bit [7:0] c;
     
-    function new(input bit[7:0]a, input bit[7:0]b, input bit[7:0]c);
+    function new(input bit[7:0]a, input bit[7:0]b, input bit[7:0]c);    //constructor
         this.a = a;
         this.b = b;
         this.c = c;
@@ -180,4 +180,40 @@ module tb();
     $finish;
     end
  
+endmodule
+
+
+
+class A56;
+    bit [3:0] a;
+    bit [3:0] b;
+    bit [3:0] c;
+    
+    function new(input bit[3:0]a = 4'b0, input bit[3:0]b=4'b0, input bit[3:0]c=4'b0);    //constructor
+        this.a = a;
+        this.b = b;
+        this.c = c;
+    endfunction   
+
+    task add(output bit[4:0]result);                //task to perform addition of three variables and send results to console
+        result = a+b+c;
+        $display("a=%0d, b=%0d, c=%0d, result: %0d", a,b,c,result);
+    endtask
+    
+endclass
+    
+ module tb();
+    bit [4:0] result;
+    
+    A56 object;               //create object
+    
+    initial begin                
+    result = 5'b0;            
+    end
+    
+    initial begin
+    object = new(1,2,4);            //call constructor
+    object.add(result);             //use task from class A56
+    end
+    
 endmodule
