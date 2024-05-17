@@ -150,4 +150,34 @@ endfunction
     end
     $finish;
     end
+endmodule
+
+
+class A55;
+    bit [7:0] a;
+    bit [7:0] b;
+    bit [7:0] c;
     
+    function new(input bit[7:0]a, input bit[7:0]b, input bit[7:0]c);
+        this.a = a;
+        this.b = b;
+        this.c = c;
+    endfunction
+    
+    task display();
+        $display("a: %0d, b: %0d, c:%0d",a,b,c);
+    endtask;
+    
+endclass
+
+module tb();
+    A55 object;            //create an object of class A55
+    
+    initial begin
+    object = new(2,4,56);        //call constructor
+    object.display();    
+    #10
+    $finish;
+    end
+ 
+endmodule
