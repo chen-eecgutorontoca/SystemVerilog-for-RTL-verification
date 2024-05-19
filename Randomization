@@ -1,0 +1,47 @@
+`timescale 1ns / 1ns
+//////////////////////////////////////////////////////////////////////////////////
+// Company: eecg.utoronto.ca
+// Engineer: Bob C
+// 
+// Create Date: 05/11/2024 04:55:16 AM
+// Design Name: 
+// Module Name: testbench
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+class generator;        //create a class for three variables
+
+    rand bit [7:0] x,y,z;
+    constraint data {x inside {[1:255]}; y inside {[1:255]}; z inside {[1:255]}; }    //add a constraint 
+
+endclass
+
+module tb();
+    generator g;        //create an instance of generator class
+    int i;
+    
+    initial begin
+        g = new();
+        i=0;
+        for(int i=0; i<20; i++)begin              //generate 20 random values for x,y,z
+           assert(g.randomize())else begin                        //display failure message
+               $display("randomization failed at %0t", $realtime);
+           end
+           $display("x: %0d, y: %0d, z:%0d at time = %0t",g.x, g.y, g.z, $realtime);    //print randomly generated values
+        end
+        $display("20 random values generation finished at time = %0t", $realtime);
+        #20;
+        $finish;
+     end
+   
+endmodule
+   
