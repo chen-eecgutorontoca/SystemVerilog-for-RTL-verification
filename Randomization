@@ -80,4 +80,39 @@ module tb();
     end
     
 endmodule
+
+
+class generator;
+  
+  rand bit [4:0] a;
+  rand bit [5:0] b;
+    
+  extern constraint data;        //write constraint outside of class
+ 
+endclass
+   
+constraint generator :: data{            //constraint inside scope of generator class
+        a inside {[0:8]};
+        b inside {[0:5]};
+        };
+  
+module tb();
+    generator g;
+    int i = 0;
+    int j = 0;            //randomization error count
+    
+    initial begin
+        g = new();
+        for(i=0; i<20; i++)begin
+            if(!g.randomize())begin
+                j++;
+            end else begin
+                $display("value of a: %0d b: %0d", g.a, g.b);        //print values of a and b at each iterations
+            end
+        end
+        $display("Error count after generating 20 random values: %0d",j);
+        $finish;
+    end
+ 
+ endmodule
    
