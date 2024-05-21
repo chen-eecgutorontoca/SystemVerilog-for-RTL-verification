@@ -9,7 +9,7 @@
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
-// Description: 
+// Description: Randomized Test Cases
 // 
 // Dependencies: 
 // 
@@ -144,4 +144,39 @@ module tb();
         end
         $finish;
      end
-     
+endmodule
+
+
+class generator;
+  
+  rand bit [3:0] addr;
+  rand bit wr;
+  
+  constraint wrctl{wr dist {1:=50, 0:=50};}        //1:1 assignment for wr signal
+  
+  constraint data{                                //when wr high, addr should be 0-7, otherwise 8-15
+    if(wr){
+       addr inside {[0:7]};
+    }else{
+        addr inside {[8:15]};
+     }
+   }
+       
+   
+endclass
+
+module tb();
+    generator g;
+    
+    
+    initial begin
+        g = new();
+        for(int i=0; i<20; i++)begin
+            assert(g.randomize())else begin
+                $display("Randomization Failed at time=%0t",$time);
+            end $display("wr=%0d, addr=%0d at time=%0",g.wr,g.addr,$time);
+        end
+        $finish;
+   end
+   
+endmodule
