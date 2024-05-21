@@ -115,4 +115,33 @@ module tb();
     end
  
  endmodule
+
+
+
+class generator;
+  
+  rand bit rst;
+  rand bit wr;
+  
+  constraint ctrl_sig{                //adding constraint with weighted distribution
+    rst dist{0:=30, 1:=70};         //rst 30% low
+    wr dist{0:=50, 1:=50};          //wr 50% high
+    }
    
+endclass
+
+module tb();
+    generator g;
+    
+    initial begin
+        g = new();
+        for(int i=0; i<20; i++)begin
+            if(!g.randomize())begin
+                $display("Randomization Failed at time=%0t",$time);
+            end else begin
+                $display("rst: %0d, wr: %0d at time=%0t", g.rst, g.wr, $time);
+            end
+        end
+        $finish;
+     end
+     
