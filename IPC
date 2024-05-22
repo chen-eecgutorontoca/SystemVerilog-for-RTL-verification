@@ -1,0 +1,56 @@
+`timescale 1ns / 1ns
+//////////////////////////////////////////////////////////////////////////////////
+// Company: eecg.utoronto.ca
+// Engineer: Bob C
+// 
+// Create Date: 05/11/2024 04:55:16 AM
+// Design Name: 
+// Module Name: tb
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+module tb;    //A81
+ 
+    int i,j =0;
+    
+ task task1;
+   forever begin                //infinite loop
+      #20
+      $display("Task 1 Trigger");
+      i++;
+    end
+endtask
+  
+task task2;
+    forever begin
+        #40
+        $display("Task 2 Trigger");
+        j++;
+    end
+endtask
+
+task run;        //run for 200 ns, adjust if needed
+    #200;
+endtask
+
+    initial begin
+      fork              //task1 and 2 will both run for 200ns
+        task1();
+        task2();
+        run();
+      join_any
+    $display("Task1 count: %0d, Task2 count: %0d",i,j);
+    $finish;
+    end
+ 
+ endmodule 
+ 
