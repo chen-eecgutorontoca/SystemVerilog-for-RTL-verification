@@ -112,3 +112,70 @@ module tb();
     end
     
 endmodule
+
+
+class transaction;
+ 
+rand bit [7:0] a;
+rand bit [7:0] b;
+rand bit wr;
+ 
+constraint data{wr dist{1:=50,0:=50};}
+endclass
+
+class generator;
+    transaction t1;
+    mailbox #(transaction) mbx;
+    
+    function new(mailbox #(transaction) mbx);
+        this.mbx = mbx;
+    endfunction
+    
+    task main();      
+        for(int i=0; i<10; i++)begin
+            t1 = new();
+            assert(t1.randomize())else $display("Randomization Failed at time=%0t",$time);
+              mbx.put(t1);
+              $display("[GEN] DATA SENT a:%0d, b:%0d, wr:%0d", t1.a, t1.b, t1.wr);
+              #10;
+         end
+    endtask
+    
+endclass
+
+class driver;
+    transaction t2;
+    mailbox #(transaction) mbx;
+    
+    function new(mailbox #(transaction) mbx);
+        this.mbx = mbx;
+    endfunction
+    
+    task main(); 
+        forever begin
+            t2 = new();
+            mbx.get(t2);
+            $display("[GEN] DATA RCVD a:%0d, b:%0d, wr:%0d", t2.a, t2.b, t2.wr);
+            #10;
+        end
+   endtask
+ 
+ endclass
+ 
+ module tb;
+    driver d;
+    generator g;
+    mailbox #(transaction) mbx;
+    
+    initial begin
+        mbx = new();
+        d = new(mbx);
+        g = new(mbx);
+        fork
+            g.main();
+            d.main();
+        join
+        $finish;
+    end
+    
+ endmodule
