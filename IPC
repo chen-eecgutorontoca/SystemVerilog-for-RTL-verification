@@ -53,4 +53,62 @@ endtask
     end
  
  endmodule 
- 
+
+//send transaction data between driver and generator
+class transaction;  
+   
+    bit [7:0] addr = 8'h12;
+    bit [3:0] data = 4'h4;  
+    bit we = 1'b1;  
+    bit rst = 1'b0;  
+   
+endclass  
+  
+class generator;  
+    transaction t;  //create instance of transcation class
+    mailbox mbx;   //declare a mailbox to transfer info 
+      
+    task send();  
+        t = new(); 
+        mbx.put(t);       //send data
+        $display("[GEN] DATA SENT addr:%0h, data:%0h, we:%b, rst:%b", t.addr, t.data, t.we, t.rst);  
+    endtask  
+  
+  	function new(mailbox mbx);      //automate mailbox communication
+        this.mbx = mbx;
+    endfunction
+      
+endclass  
+  
+class driver;  
+    transaction t2;  
+    mailbox mbx;  
+        
+    task receive();  
+        mbx.get(t2);      //recieve data from mailbox
+        $display("[DRV] DATA RECEIVED addr:%0h, data:%0h, we:%b, rst:%b", t2.addr, t2.data, t2.we, t2.rst);
+    endtask  
+      
+ 	function new(mailbox mbx);
+        this.mbx = mbx;
+    endfunction
+    
+endclass 
+
+module tb();
+    driver d;
+    generator g;
+    mailbox mbx;
+    
+    initial begin
+        mbx = new();     //mailbox is also a class
+        d = new(mbx);    //enable mailbox communication
+        g = new(mbx);
+        fork             //wait for data transfer to finish
+            g.send();
+            d.receive();
+        join
+        $finish;
+    end
+    
+endmodule
