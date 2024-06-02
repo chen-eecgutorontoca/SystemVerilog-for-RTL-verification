@@ -1,0 +1,135 @@
+`timescale 1ns / 1ns
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 05/11/2024 04:55:16 AM
+// Design Name: 
+// Module Name: tb
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+module top
+(
+  input clk,
+  input [3:0] a,b,
+  output reg [7:0] mul
+);
+  
+  always@(posedge clk)
+    begin
+     mul <= a * b;
+    end
+  
+endmodule
+
+
+
+class transaction;
+    rand bit [3:0] a;
+    rand bit [3:0] b;
+    bit [7:0] mul;
+   
+    function transaction duplicate();        //deep copy
+        transaction copy = new();
+        copy.a = this.a;
+        copy.b = this.b;
+        copy.mul = this.mul;
+        return copy;
+    endfunction
+
+endclass
+
+class generator;
+    transaction t;
+    mailbox #(transaction) mbx;          //use parametrized mailbox
+    
+    function new(mailbox #(transaction) mbx);
+        this.mbx = mbx;
+        t = new();
+    endfunction
+    
+    task send();
+        for (int i = 0; i < 10; i++) begin          //generate 10 random values and send to driver
+            t.randomize();
+            mbx.put(t.duplicate());
+            $display("Generated a: %0d, b: %0d", t.a, t.b);
+            #10;
+        end
+    endtask
+
+endclass
+
+interface top_if();
+    logic [3:0] a;
+    logic [3:0] b;
+    logic [7:0] mul;
+    logic clk;
+endinterface
+
+class driver;
+    virtual top_if tif;
+    transaction data;
+    mailbox #(transaction) mbx;
+    
+    function new(mailbox #(transaction) mbx, virtual top_if tif);
+        this.mbx = mbx;
+        this.tif = tif;
+    endfunction
+    
+    task receive();
+        forever begin
+            mbx.get(data);
+            $display("Received a: %0d, b: %0d", data.a, data.b);
+            @(posedge tif.clk)
+                tif.a <= data.a;
+                tif.b <= data.b;
+        end
+    endtask
+    
+endclass
+
+module tb;
+    top_if tif();
+    generator g;
+    driver d;
+    mailbox #(transaction) mbx;
+    
+    initial begin
+        mbx = new();
+        g = new(mbx);
+        d = new(mbx, tif);
+    end
+    
+    initial begin
+        tif.clk = 1'b0;
+    end
+    
+    always #10 tif.clk = ~tif.clk;
+    
+    top dut(.a(tif.a), .b(tif.b), .clk(tif.clk), .mul(tif.mul));      //instantiation
+    
+    initial begin
+        fork
+            g.send();
+            d.receive();
+        join
+        $display("Finished at time = %0t", $time);
+        $finish;
+    end
+    
+    initial begin
+        $dumpfile("dump.vcd");
+        $dumpvars;
+    end
+
+endmodule
