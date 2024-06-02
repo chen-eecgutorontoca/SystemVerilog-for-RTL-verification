@@ -133,3 +133,114 @@ module tb;
     end
 
 endmodule
+
+
+
+interface top_if;
+  logic clk;
+  logic [3:0] a, b;
+  logic [7:0] mul;
+endinterface
+ 
+ 
+class monitor;
+  
+  mailbox mbx;
+
+  virtual top_if tif;
+  
+  function new(mailbox mbx);
+    this.mbx = mbx;
+  endfunction
+  
+  task run();
+    forever begin
+      repeat(2) @(posedge tif.clk);
+      $display("-------------------------");
+      $display("[MON] : DATA SENT TO SCOREBOARD");
+      mbx.put(tif);
+    end
+  endtask
+  
+  
+endclass
+ 
+ 
+class scoreboard;
+  
+  mailbox  mbx;
+  virtual top_if tif;
+  
+  function new(mailbox mbx);
+    this.mbx = mbx;
+   endfunction
+  
+  task checkResult(input virtual top_if tif);
+    if((tif.mul) == (tif.a * tif.b)) 
+      $display("Test Passed!");
+    else
+      $error("Test Failed! Expected Result: %0d, Your Result: %0d", tif.a*tif.b, tif.mul);
+  endtask
+ 
+  task run();
+    forever begin
+      mbx.get(tif);
+      $display("[SCO] : DATA RCVD: a:%0d, b:%0d, mul:%0d", tif.a, tif.b, tif.mul);
+      checkResult(tif);
+      $display("-------------------------");
+      #40;
+    end
+  endtask
+  
+  
+endclass
+ 
+
+ 
+module tb;
+  
+ top_if tif();
+  monitor mon;
+  scoreboard sco;
+  mailbox mbx;
+
+  top dut (.a(tif.a), .b(tif.b), .mul(tif.mul), .clk(tif.clk));
+ 
+ 
+  initial begin
+    tif.clk <= 0;
+  end
+  
+  always #10 tif.clk <= ~tif.clk;
+ 
+  initial begin
+    for(int i = 0; i < 10 ; i++) begin
+      repeat(2)@(posedge tif.clk);
+      tif.a <= $urandom_range(0,15);
+      tif.b <= $urandom_range(0,15);    
+    end
+  end
+  
+  initial begin
+    mbx = new();
+    mon = new(mbx);
+    sco = new(mbx);
+    mon.tif = tif;
+    
+  end
+              
+    initial begin         
+      fork        
+        mon.run();
+        sco.run();
+      join
+    end
+ 
+  initial begin
+    $dumpfile("dump.vcd"); 
+    $dumpvars;  
+    #300;
+    $finish();
+  end
+  
+endmodule
