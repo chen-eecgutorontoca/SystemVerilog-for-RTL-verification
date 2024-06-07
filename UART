@@ -1,0 +1,86 @@
+module(
+  	input clk;
+  	input rst_n;
+  	input din;
+  	output dout
+)
+  
+  always(@posedge clk)begin
+    if(!rst_n)begin
+      	dout <= 1'b0;
+    else begin
+      	dout <= din;
+    end
+  end
+    
+endmodule
+
+
+//Verification
+interface dff;
+  logic clk;
+  logic rst_n;
+  logic din;
+  logic dout;
+endinterface
+
+class transaction;
+  //bit clk;
+  //bit rst_n;
+  rand bit din;
+  bit dout;
+  
+  function transaction copy();
+    copy = new();
+    copy.din = this.din;
+    copy.dout = this.dout;
+  endfunction
+  
+endclass
+
+class generator;
+  transaction t;
+  mailbox #(transaction) mbx;
+  mailbox #(transaction) mbxs;
+  event continu;
+  
+  function new(mailbox #(transaction) mbx, mailbox #(transaction) mbxs);
+    this.mbx = mbx;
+    this.mbxs = mbxs;
+    t = new();
+  endfunction
+  
+  task generation();
+    for(int i=0; i<10; i++)begin
+      assert(t.randomization())else $display("Randomization Failed!");
+      mbx.put(t);
+      $display("din: %0d", t.din);
+      @(continu);
+    end
+  endtask
+  
+endclass
+    
+
+class driver;
+  transaction tr;
+  virtual dff dffi;
+  mailbox #(transaction) mbx;
+  mailbox #(transaction) mbxs;
+  
+  function new( mailbox #(transaction) mbx, mailbox #(transaction) mbxs);
+    this.mbx = mbx;
+    this.mbxs = mbxs;
+    tr = new();
+  endfunction
+  
+  task reset();
+    dffi.rst_n = 1'b0;
+    #10
+    dffi.rst_n = 1'b1;
+  endtask
+  
+  task drive();
+  endtask
+  
+endclass
