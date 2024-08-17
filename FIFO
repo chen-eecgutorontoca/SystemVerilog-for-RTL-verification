@@ -1,0 +1,18 @@
+module FIFO(clk, rst_n, rd_en, wr_en, din, dout, empty, full);
+  input clk;
+  input rst_n;
+  input wr_en;
+  input wr_en;
+  input [15:0] din;
+  output [15:0] dout;
+  output empty;
+  output full;
+  
+  
+  
+  
+
+  
+      
+      
+ endmodule
