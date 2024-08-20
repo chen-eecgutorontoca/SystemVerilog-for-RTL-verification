@@ -1,18 +1,64 @@
-module FIFO(clk, rst_n, rd_en, wr_en, din, dout, empty, full);
-  input clk;
-  input rst_n;
-  input wr_en;
-  input wr_en;
-  input [15:0] din;
-  output [15:0] dout;
-  output empty;
-  output full;
-  
-  
-  
-  
+module FIFO(
+    input clk,
+    input rst_n,
+    input rd_en,
+    input wr_en,
+    input [15:0] din,
+    output reg [15:0] dout,
+    output reg empty,
+    output reg full
+);
+    reg [3:0] wr_ptr;
+    reg [3:0] rd_ptr;
+    reg [7:0] mem [15:0]; 
+ 	reg [3:0] cnt;
+ 
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n)
+            wr_ptr <= 4'b0;
+        else if (wr_en && !full) 
+            wr_ptr <= wr_ptr + 1;
+        else
+          	wr_ptr <= wr_ptr;
+    end
 
+ 
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n)
+            rd_ptr <= 4'b0;
+        else if (rd_en && !empty) 
+            rd_ptr <= rd_ptr + 1;
+        else
+          	rd_ptr <= rd_ptr;
+    end
+
+
+    always @(posedge clk) begin
+        if (wr_en && !full)
+            mem[wr_ptr] <= din;
+        else
+          mem[wr_ptr] <= mem[wr_ptr];
+    end
+
+    always @(posedge clk) begin
+        if (rd_en && !empty)
+            dout <= mem[rd_ptr];
+        else
+          	dout <= dout;
+    end
+ 	
+   always@(posedge clk or negedge rst_n)begin
+     if(rst_n)
+        cnt <= 4'b0;
+     else if(wr_en && !rd_en)
+      	cnt <= cnt + 1;
+     else if(rd_en && !wr_en)
+      	cnt <= cnt - 1;
+     else
+      	cnt <= cnt;
+   end 
   
-      
-      
- endmodule
+  assign full = (cnt==4'b1111)? 1:0;
+  assign empty = (cnt==4'b0)? 1:0;
+  
+endmodule
