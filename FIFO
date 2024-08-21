@@ -100,3 +100,26 @@ class transaction;
 endclass
 
 
+class generator;
+  transaction tr;
+  
+  mailbox #(transaction) mbx;
+  
+  function new(mailbox #(transaction)mbx);
+    this.mbx = mbx;
+    tr = new();
+  endfunction
+  
+  task generate_transaction;
+    for(int i=0; i<20; i++)begin
+      assert(tr.randomize())begin
+        mbx.put(tr);
+        $display("wr_en: %0d, rd_en: %0d, din:%0d", tr.wr_en, tr.rd_en, tr.din);
+        end else begin
+        $display("Randomization Failed!");
+        end
+    end
+  endtask
+  
+endclass
+
