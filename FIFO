@@ -80,4 +80,23 @@ interface FIFO_IF;
   logic empty, full
   
 endinterface
+/---------------------------------------------/
+
+
+class transaction;
+  bit clk;
+  bit rst_n;
+  rand bit rd_en, wr_en;
+  rand bit [15:0] din;
+  bit [15:0] dout;
+  bit empty, full;
+  
+  constraint wr {
+    rd_en dist {1 := 50, 0 := 50};
+    wr_en dist {1 := 50, 0 := 50};
+    rd_en!=wr_en;
+  }
+  
+endclass
+
 
