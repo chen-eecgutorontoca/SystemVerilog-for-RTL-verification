@@ -1,3 +1,7 @@
+//Author: Bob C
+
+//rtl
+/---------------------------------------------------/
 module FIFO(
     input clk,
     input rst_n,
@@ -14,7 +18,7 @@ module FIFO(
  	reg [3:0] cnt;
  
     always @(posedge clk or negedge rst_n) begin
-        if (!rst_n)
+      if (!rst_n)
             wr_ptr <= 4'b0;
         else if (wr_en && !full) 
             wr_ptr <= wr_ptr + 1;
@@ -24,7 +28,7 @@ module FIFO(
 
  
     always @(posedge clk or negedge rst_n) begin
-        if (!rst_n)
+      if (!rst_n)
             rd_ptr <= 4'b0;
         else if (rd_en && !empty) 
             rd_ptr <= rd_ptr + 1;
@@ -48,7 +52,7 @@ module FIFO(
     end
  	
    always@(posedge clk or negedge rst_n)begin
-     if(rst_n)
+     if(!rst_n)
         cnt <= 4'b0;
      else if(wr_en && !rd_en)
       	cnt <= cnt + 1;
@@ -62,3 +66,18 @@ module FIFO(
   assign empty = (cnt==4'b0)? 1:0;
   
 endmodule
+/----------------------------------------------/
+
+//interface
+/---------------------------------------------/
+interface FIFO_IF;
+  
+  logic clk;
+  logic rst_n;
+  logic rd_en, wr_en;
+  logic [15:0] din;
+  logic [15:0] dout;
+  logic empty, full
+  
+endinterface
+
