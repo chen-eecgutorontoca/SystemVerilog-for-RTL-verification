@@ -82,7 +82,7 @@ interface FIFO_IF;
 endinterface
 /---------------------------------------------/
 
-
+/----------------------------------------------/
 class transaction;
   bit clk;
   bit rst_n;
@@ -98,12 +98,15 @@ class transaction;
   }
   
 endclass
+/-------------------------------------------/
 
 
+//Generator
+/------------------------------------------------------------------------------------/
 class generator;
   transaction tr;
-  
   mailbox #(transaction) mbx;
+  virtual FIFO_IF ff;
   
   function new(mailbox #(transaction)mbx);
     this.mbx = mbx;
@@ -114,16 +117,20 @@ class generator;
     for(int i=0; i<20; i++)begin
       assert(tr.randomize())begin
         mbx.put(tr);
-        $display("wr_en: %0d, rd_en: %0d, din:%0d", tr.wr_en, tr.rd_en, tr.din);
+        $display("GEN: wr_en: %0d, rd_en: %0d, din:%0d", tr.wr_en, tr.rd_en, tr.din);
         end else begin
         $display("Randomization Failed!");
         end
+      wait (mbx.num() == 0);
     end
   endtask
   
 endclass
+/---------------------------------------------------------------------------------/
 
 
+//Driver
+/---------------------------------------------------------------------------------/
 class driver;
   transaction t;
   mailbox #(transaction) mbx;
@@ -131,7 +138,7 @@ class driver;
   
   function new(mailbox #(transaction) mbx, virtual FIFO_IF ff);
     this.mbx = mbx;
-    this.ff = ff;  // Bind the virtual interface
+    this.ff = ff; 
   endfunction
   
   task reset;
@@ -139,14 +146,16 @@ class driver;
     ff.rd_en = 1'b0;
     ff.wr_en = 1'b0;
     ff.din = 15'b0;
+    ff.clk = 1'b0;
     #20;
     ff.rst_n = 1;
     $display("Reset Done!");
   endtask
   
-  task drive_transaction;
+  task drive_signals;
     for(int j=0; j<20; j++)begin
       mbx.get(t);
+   //   @(posedge ff.clk)
       if(t.wr_en)begin
         ff.wr_en = 1'b1;
       	ff.rd_en = 1'b0;
@@ -158,8 +167,36 @@ class driver;
       	ff.din = t.din;
         $display("DRV: wr_en: %0d, rd_en: %0d, din:%0d", t.wr_en, t.rd_en, t.din);
        end
-      
     end
   endtask
   
 endclass
+
+/------------------------------------------------------------------------------------/
+
+
+
+
+module tb;
+  generator g;
+  driver d;
+  mailbox #(transaction) mbx;
+  FIFO_IF ff();
+  
+  always #10 ff.clk = ~ff.clk;
+  
+  initial begin
+ 
+    mbx = new();
+    g = new(mbx);
+    d = new(mbx,ff);
+    d.reset;
+	fork
+    g.generate_transaction;
+    d.drive_signals;
+    join
+  end
+  
+
+  
+endmodule
