@@ -123,3 +123,43 @@ class generator;
   
 endclass
 
+
+class driver;
+  transaction t;
+  mailbox #(transaction) mbx;
+  virtual FIFO_IF ff;
+  
+  function new(mailbox #(transaction) mbx, virtual FIFO_IF ff);
+    this.mbx = mbx;
+    this.ff = ff;  // Bind the virtual interface
+  endfunction
+  
+  task reset;
+    ff.rst_n = 1'b0;
+    ff.rd_en = 1'b0;
+    ff.wr_en = 1'b0;
+    ff.din = 15'b0;
+    #20;
+    ff.rst_n = 1;
+    $display("Reset Done!");
+  endtask
+  
+  task drive_transaction;
+    for(int j=0; j<20; j++)begin
+      mbx.get(t);
+      if(t.wr_en)begin
+        ff.wr_en = 1'b1;
+      	ff.rd_en = 1'b0;
+      	ff.din = t.din;
+        $display("DRV: wr_en: %0d, rd_en: %0d, din:%0d", t.wr_en, t.rd_en, t.din);
+       end else begin
+        ff.wr_en = 1'b0;
+      	ff.rd_en = 1'b1;
+      	ff.din = t.din;
+        $display("DRV: wr_en: %0d, rd_en: %0d, din:%0d", t.wr_en, t.rd_en, t.din);
+       end
+      
+    end
+  endtask
+  
+endclass
