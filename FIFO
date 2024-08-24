@@ -172,6 +172,36 @@ class driver;
   
 endclass
 
+
+class monitor;
+  transaction tr;
+  virtual FIFO_IF ff;
+  mailbox #(transaction) mbx;
+  
+  function new(mailbox #(transaction) mbx, virtual FIFO_IF ff);
+    this.mbx = mbx;
+    this.ff = ff;
+    tr = new();
+  endfunction
+  
+  
+  task get_signals;
+    for(int k=0; k<20; k++)begin
+ 	@(posedge ff.clk)
+    tr.rd_en = ff.rd_en;
+    tr.wr_en = ff.wr_en;
+    tr.din = ff.din;
+    tr.dout = ff.dout;
+    tr.empty = ff.empty;
+    tr.full = ff.full;
+    mbx.put(tr);
+    $display("MON: wr_en: %0d, rd_en: %0d, din:%0d, dout:%0d, empty:%0d, full: %0d", 
+             tr.wr_en, tr.rd_en, tr.din, tr.dout, tr.empty, tr.full);
+    end
+  endtask
+  
+endclass
+
 /------------------------------------------------------------------------------------/
 
 
@@ -180,21 +210,30 @@ endclass
 module tb;
   generator g;
   driver d;
+  monitor m;
   mailbox #(transaction) mbx;
+  mailbox #(transaction) mbxm;
   FIFO_IF ff();
   
   always #10 ff.clk = ~ff.clk;
   
+  FIFO dut(.clk(ff.clk), .rst_n(ff.rst_n), .rd_en(ff.rd_en),
+           .wr_en(ff.wr_en), .din(ff.din), .dout(ff.dout),
+           .empty(ff.empty), .full(ff.full));
+  
   initial begin
  
     mbx = new();
+    mbxm = new();
+    m = new(mbxm,ff);
     g = new(mbx);
     d = new(mbx,ff);
     d.reset;
 	fork
     g.generate_transaction;
     d.drive_signals;
-    join
+    m.get_signals;
+    join_any
   end
   
 
