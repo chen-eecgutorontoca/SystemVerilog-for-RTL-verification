@@ -204,7 +204,45 @@ endclass
 
 /------------------------------------------------------------------------------------/
 
-
+class scoreboard;
+  transaction t;
+  virtual FIFO_IF ff;
+  mailbox #(transaction) mbx;
+  
+  event next;
+  int test_data [$];
+  bit golden_output;
+  int error_cnt = 0;
+  
+  function new(mailbox #(transaction) mbx, virtual FIFO_IF ff);
+    this.mbx = mbx;
+    this.ff = ff;
+  endfunction
+  
+  task compare_results;
+    forever begin
+      @(posedge ff.clk)
+      mbx.get(t);
+      if(ff.full)begin
+        $display("FIFO FULL");
+      end else if (ff.empty)begin
+        $display("FIFO EMPTY");         
+      end else if(t.wr_en==1 && !t.full)begin
+        test_data.push_front(t.din);
+      end else if(t.rd_en==1 && !t.empty)begin
+        golden_output = test_data.pop_back();
+        if(t.dout == golden_output)begin
+          $display("TEST PASSED!");
+        end else begin
+          $display("TEST FAILED! Expected: %0d, Got: %0d", golden_output, t.dout);
+          error_cnt++;
+        end
+      end
+      ->next;
+    end
+  endtask
+        
+endclass
 
 
 module tb;
