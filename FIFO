@@ -77,7 +77,7 @@ interface FIFO_IF;
   logic rd_en, wr_en;
   logic [15:0] din;
   logic [15:0] dout;
-  logic empty, full
+  logic empty, full;
   
 endinterface
 /---------------------------------------------/
