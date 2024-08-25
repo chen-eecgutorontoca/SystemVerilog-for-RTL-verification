@@ -113,6 +113,7 @@ class generator;
   endfunction
   
   task generate_transaction;
+    #20;
     repeat(5)begin
       assert(tr.randomize())else $display("Randomization Failed!");
       mbx.put(tr);
@@ -139,7 +140,7 @@ class driver;
     ff.rd_en <= 1'b0;
     ff.wr_en <= 1'b0;
     ff.din <= 15'b0;
-    #20;
+    #40;
     ff.rst_n <= 1;
     $display("Reset Done!");
   endtask
@@ -147,20 +148,21 @@ class driver;
   task drive_signals();
   forever begin
     mbx.get(t);
-    @(posedge ff.clk); 
-    if(t.wr_en) begin
+    repeat(2)@(posedge ff.clk); 
+    if(t.wr_en==1) begin
       ff.wr_en <= 1'b1;
       ff.rd_en <= 1'b0;
-      ff.din = $random;
-    $display("DRV W: wr_en: %0d, rd_en: %0d, din:%0d", t.wr_en, t.rd_en, t.din);
- //     @(posedge ff.clk);
-  //    ff.wr_en <= 1'b0;
+      ff.din = t.din;
+     $display("DRV W: wr_en: %0d, rd_en: %0d, din:%0d", t.wr_en, t.rd_en, t.din);
+     @(posedge ff.clk);
+     ff.wr_en <= 1'b0;
     end 
-    if(t.rd_en) begin
+    if(t.rd_en==1) begin
       ff.wr_en <= 1'b0;
       ff.rd_en <= 1'b1;
- //     @(posedge ff.clk);
- //     ff.rd_en <= 1'b0;
+      $display("DRV R: wr_en: %0d, rd_en: %0d, ", t.wr_en, t.rd_en);
+      @(posedge ff.clk);
+      ff.rd_en <= 1'b0;
     end
   end
 endtask
@@ -312,6 +314,9 @@ module tb;
     e = new(ff);
     e.main();
   end
+  
+  
+endmodule
   
   
 endmodule
